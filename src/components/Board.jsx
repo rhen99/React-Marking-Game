@@ -1,10 +1,60 @@
 import { useState, useEffect } from "react";
 import Tile from "./Tile";
+
+const nearTiles = [
+  [-1, -1],
+  [-1, 0],
+  [-1, 1],
+  [0, -1],
+  [0, 1],
+  [1, -1],
+  [1, 0],
+  [1, 1],
+];
 function Board({ tileCount }) {
   const [tiles, setTiles] = useState([]);
+  const [isSelected, setIsSelected] = useState(false);
+
+  const selectTile = (position) => {
+    setTiles(
+      tiles.map((row) =>
+        row.map((tile) =>
+          tile.position === position
+            ? { ...tile, near_spot: false, far_spot: false, selected: true }
+            : { ...tile, near_spot: false, far_spot: false, selected: false }
+        )
+      )
+    );
+    setIsSelected(true);
+  };
+  const openNearSpots = (position) => {
+    setTiles((prevTiles) =>
+      prevTiles.map((row) =>
+        row.map((tile) =>
+          tile.position === position ? { ...tile, near_spot: true } : tile
+        )
+      )
+    );
+  };
+
+  const openSpots = () => {
+    const nearSpots = findNeighboringTiles(tiles, nearTiles);
+
+    nearSpots.forEach((spot) => {
+      openNearSpots(spot);
+    });
+  };
+
   useEffect(() => {
-    setTiles(setBoard(tileCount));
+    setTiles(createBoard(tileCount));
   }, []);
+
+  useEffect(() => {
+    if (isSelected) {
+      openSpots();
+      setIsSelected(false);
+    }
+  }, [isSelected]);
   return (
     <div
       className="board"
@@ -12,37 +62,47 @@ function Board({ tileCount }) {
         gridTemplateColumns: `repeat(${tileCount}, 1fr)`,
       }}
     >
-      {tiles.map((tile) => (
-        <Tile key={tile.id} tile={tile} />
-      ))}
+      {tiles.map((row, i) =>
+        row.map((col, j) => (
+          <Tile key={`${i}-${j}`} tile={col} selectTile={selectTile} />
+        ))
+      )}
     </div>
   );
 }
 
-function setBoard(size) {
-  const tileArr = [];
-  let rowCount = 1;
-  let colCount = 1;
-  let tileObJ = {};
+function createBoard(size) {
+  const rows = [];
+  for (let i = 0; i < size; i++) {
+    rows.push(
+      Array.from(Array(size), (_, index) => {
+        return {
+          selected: false,
+          team: null,
+          marked: false,
+          position: `${i}-${index}`,
+          near_spot: false,
+          far_spot: false,
+        };
+      })
+    );
+  }
+  return rows;
+}
 
-  for (let i = 1; i <= size * size; i++) {
-    tileObJ = {
-      id: Math.floor(Math.random() * 1000000),
-      row: rowCount,
-      column: colCount,
-      marked: false,
-      selected: false,
-      team: null,
-    };
-    tileArr.push(tileObJ);
+function findNeighboringTiles(tilesArr, tilesToCheck) {
+  const foundTiles = [];
 
-    colCount++;
-    if (colCount > size) {
-      colCount = 1;
-      rowCount++;
+  for (let i = 0; i < tilesArr.length; i++) {
+    for (let j = 0; j < tilesArr[i].length; j++) {
+      if (tilesArr[i][j].selected) {
+        tilesToCheck.forEach(([x, y]) => {
+          foundTiles.push(`${i + x}-${j + y}`);
+        });
+      }
     }
   }
-  return tileArr;
+  return foundTiles;
 }
 
 export default Board;
