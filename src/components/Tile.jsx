@@ -5,7 +5,7 @@ function Tile({ selectTile, tile, turn, playerMove }) {
         tile.near_spot ? "near" : ""
       } ${tile.far_spot ? "far" : ""}`}
       onClick={
-        tile.marked && turn === tile.team
+        !tile.selected && tile.marked && turn === tile.team
           ? () => selectTile(tile.position)
           : tile.near_spot || tile.far_spot
           ? () => playerMove(tile)
