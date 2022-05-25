@@ -129,61 +129,41 @@ function Board({ tileCount }) {
     setTurn((turn) => (turn === 1 ? (turn += 1) : (turn -= 1)));
   };
 
-  const openSpots = () => {
-    for (let i = 0; i < tiles.length; i++) {
-      for (let j = 0; j < tiles[i].length; j++) {
-        if (tiles[i][j].selected) {
-          const nearSpots = findNeighboringTiles(tiles[i][j], nearTiles);
-          const farSpots = findNeighboringTiles(tiles[i][j], farTiles);
-
-          nearSpots.forEach((spot) => {
-            openNearSpots(spot);
-          });
-
-          farSpots.forEach((spot) => {
-            openFarSpots(spot);
-          });
-        }
-      }
-    }
-  };
-
-  const checkIfGameOver = () => {
-    const marks = [];
-    let marksSurroundungs = [];
-    for (let i = 0; i < tiles.length; i++) {
-      for (let j = 0; j < tiles[i].length; j++) {
-        if (tiles[i][j].team === turn) {
-          marks.push(tiles[i][j]);
-        }
-      }
-    }
-    for (let i = 0; i < marks.length; i++) {
-      marksSurroundungs.push(findNeighboringTiles(marks[i], nearTiles));
-    }
-    for (let i = 0; i < marks.length; i++) {
-      marksSurroundungs.push(findNeighboringTiles(marks[i], farTiles));
-    }
-    const possibleMoves = [];
-
-    for (let i = 0; i < tiles.length; i++) {
-      for (let j = 0; j < tiles[i].length; j++) {
-        marksSurroundungs.flat().forEach((mark) => {
-          if (tiles[i][j].position === mark && !tiles[i][j].marked) {
-            possibleMoves.push(tiles[i][j]);
-          }
-        });
-      }
-    }
-    if (possibleMoves.length > 0) {
-      return false;
-    } else {
-      // Game Over
-      return true;
-    }
-  };
-
   useEffect(() => {
+    const checkIfGameOver = () => {
+      const marks = [];
+      let marksSurroundungs = [];
+      for (let i = 0; i < tiles.length; i++) {
+        for (let j = 0; j < tiles[i].length; j++) {
+          if (tiles[i][j].team === turn) {
+            marks.push(tiles[i][j]);
+          }
+        }
+      }
+      for (let i = 0; i < marks.length; i++) {
+        marksSurroundungs.push(findNeighboringTiles(marks[i], nearTiles));
+      }
+      for (let i = 0; i < marks.length; i++) {
+        marksSurroundungs.push(findNeighboringTiles(marks[i], farTiles));
+      }
+      const possibleMoves = [];
+
+      for (let i = 0; i < tiles.length; i++) {
+        for (let j = 0; j < tiles[i].length; j++) {
+          marksSurroundungs.flat().forEach((mark) => {
+            if (tiles[i][j].position === mark && !tiles[i][j].marked) {
+              possibleMoves.push(tiles[i][j]);
+            }
+          });
+        }
+      }
+      if (possibleMoves.length > 0) {
+        return false;
+      } else {
+        // Game Over
+        return true;
+      }
+    };
     if (tiles.length < 1) {
       setTiles(createBoard(tileCount));
     } else {
@@ -191,14 +171,32 @@ function Board({ tileCount }) {
       setBlueScore(getScore(tiles, 2));
       setGameStatus(checkIfGameOver());
     }
-  }, [tiles]);
+  }, [tiles, tileCount, turn]);
 
   useEffect(() => {
+    const openSpots = () => {
+      for (let i = 0; i < tiles.length; i++) {
+        for (let j = 0; j < tiles[i].length; j++) {
+          if (tiles[i][j].selected) {
+            const nearSpots = findNeighboringTiles(tiles[i][j], nearTiles);
+            const farSpots = findNeighboringTiles(tiles[i][j], farTiles);
+
+            nearSpots.forEach((spot) => {
+              openNearSpots(spot);
+            });
+
+            farSpots.forEach((spot) => {
+              openFarSpots(spot);
+            });
+          }
+        }
+      }
+    };
     if (isSelected) {
       openSpots();
       setIsSelected(false);
     }
-  }, [isSelected]);
+  }, [isSelected, tiles]);
   return (
     <div className="wrapper">
       <h2 className="game_status">
