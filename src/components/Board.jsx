@@ -35,7 +35,7 @@ function Board({ tileCount }) {
   const [turn, setTurn] = useState(1);
   const [redScore, setRedScore] = useState(0);
   const [blueScore, setBlueScore] = useState(0);
-  const [gameStatus, setGameStatus] = useState(false);
+  const [gameIsOver, setGameIsOver] = useState(false);
 
   const selectTile = (position) => {
     setTiles(
@@ -169,7 +169,7 @@ function Board({ tileCount }) {
     } else {
       setRedScore(getScore(tiles, 1));
       setBlueScore(getScore(tiles, 2));
-      setGameStatus(checkIfGameOver());
+      setGameIsOver(checkIfGameOver());
     }
   }, [tiles, tileCount, turn]);
 
@@ -200,11 +200,13 @@ function Board({ tileCount }) {
   return (
     <div className="wrapper">
       <h2 className="game_status">
-        {gameStatus
+        {gameIsOver
           ? redScore > blueScore
             ? "Red Wins!!!"
             : "Blue Wins!!!"
-          : null}
+          : turn < 2
+          ? "Red's turn"
+          : "Blue's turn"}
       </h2>
       <div
         className="board"
